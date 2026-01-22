@@ -1,0 +1,146 @@
+import telebot
+from telebot import types
+from flask import Flask
+from threading import Thread
+import os
+
+# Flask сервер для поддержания активности
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Telegram Bot is running on Railway!"
+
+@app.route('/health')
+def health():
+    return "OK", 200
+
+def run():
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+
+# Запускаем веб-сервер
+keep_alive()
+
+# Токен бота из переменных окружения Railway
+TOKEN = os.environ.get('TELEGRAM_TOKEN', '8362859518:AAFw5CR3wxKvSuUJOiKVdL_nn4_etjOhYwI')
+bot = telebot.TeleBot(TOKEN)
+
+@bot.message_handler(commands=['start'])
+def start_message(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item = types.KeyboardButton("Нажмите чтобы перейти к списку")
+    markup.add(item)
+    bot.send_message(message.chat.id, 'Привет!', reply_markup=markup)
+
+@bot.message_handler(commands=['button'])
+def button_message(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Кнопка")
+    markup.add(item1)
+    bot.send_message(message.chat.id, 'Выберите что вам надо', reply_markup=markup)
+
+@bot.message_handler(content_types=['text'])
+def message_reply(message):
+    if message.text == "Нажмите чтобы перейти к списку":
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+        item1 = types.KeyboardButton("Моды")
+        item2 = types.KeyboardButton("Скины")
+        item3 = types.KeyboardButton("Игра")
+        markup.add(item1, item2, item3)
+        bot.send_message(message.chat.id, 'Выберите категорию:', reply_markup=markup)
+
+    elif message.text == "Моды":
+        markup = types.InlineKeyboardMarkup()
+        pay_button = types.InlineKeyboardButton(text="Оплатить 20 звёзд", callback_data="pay_mods")
+        markup.add(pay_button)
+
+        bot.send_message(
+            message.chat.id,
+            'Для получения модов необходимо:\n\n'
+            '1. Отправить мне в лс 20 звёзд 💎\n'
+            '2. После оплаты договориться в лс со мной: @grifftech\n\n'
+            'Нажмите кнопку ниже для оплаты:',
+            reply_markup=markup
+        )
+
+    elif message.text == "Скины":
+        markup = types.InlineKeyboardMarkup()
+        pay_button = types.InlineKeyboardButton(text="Оплатить 10 звёзд", callback_data="pay_skins")
+        markup.add(pay_button)
+
+        bot.send_message(
+            message.chat.id,
+            'Для получения скинов необходимо:\n\n'
+            '1. Отправить мне в лс 10 звёзд 💎\n'
+            '2. После оплаты договориться в лс со мной: @grifftech\n\n'
+            'Нажмите кнопку ниже для оплаты:',
+            reply_markup=markup
+        )
+
+    elif message.text == "Игра":
+        markup = types.InlineKeyboardMarkup()
+        pay_button = types.InlineKeyboardButton(text="Оплатить 30 звёзд", callback_data="pay_game")
+        markup.add(pay_button)
+
+        bot.send_message(
+            message.chat.id,
+            'Для получения игры необходимо:\n\n'
+            '1. Отправить мне в лс 30 звёзд 💎\n'
+            '2. После оплаты договориться в лс со мной: @grifftech\n\n'
+            'Нажмите кнопку ниже для оплаты:',
+            reply_markup=markup
+        )
+
+    elif message.text == "Кнопка":
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item1 = types.KeyboardButton("Кнопка 2")
+        markup.add(item1)
+        bot.send_message(message.chat.id, 'Выберите что вам надо', reply_markup=markup)
+
+    elif message.text == "Кнопка 2":
+        bot.send_message(message.chat.id, 'Спасибо за прочтение статьи!')
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_query(call):
+    if call.data == "pay_mods":
+        bot.answer_callback_query(call.id, "Оплата модов: 20 звёзд")
+        bot.send_message(
+            call.message.chat.id,
+            'Отправьте 20 звёзд мне в лс 💎\n\n'
+            'После отправки:\n'
+            '1. Сделайте скриншот перевода\n'
+            '2. Напишите @grifftech в лс\n'
+            '3. Отправьте скриншот и укажите что вы покупаете\n\n'
+            '⏳ Обработка заказа занимает до 24 часов'
+        )
+    elif call.data == "pay_skins":
+        bot.answer_callback_query(call.id, "Оплата скинов: 10 звёзд")
+        bot.send_message(
+            call.message.chat.id,
+            'Отправьте 10 звёзд мне в лс 💎\n\n'
+            'После отправки:\n'
+            '1. Сделайте скриншот перевода\n'
+            '2. Напишите @grifftech в лс\n'
+            '3. Отправьте скриншот и укажите что вы покупаете\n\n'
+            '⏳ Обработка заказа занимает до 24 часов'
+        )
+    elif call.data == "pay_game":
+        bot.answer_callback_query(call.id, "Оплата игры: 30 звёзд")
+        bot.send_message(
+            call.message.chat.id,
+            'Отправьте 30 звёзд мне в лс 💎\n\n'
+            'После отправки:\n'
+            '1. Сделайте скриншот перевода\n'
+            '2. Напишите @grifftech в лс\n'
+            '3. Отправьте скриншот и укажите что вы покупаете\n\n'
+            '⏳ Обработка заказа занимает до 24 часов\n'
+            'когда будет готов сам заказ договоримся в лс'
+        )
+
+print("🚂 Бот запущен на Railway!")
+print(f"✅ Токен: {TOKEN[:10]}...")
+bot.infinity_polling()
